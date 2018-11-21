@@ -5,6 +5,11 @@
  */
 package br.gui;
 
+import br.data.entity.Cidade;
+import java.util.List;
+import static javax.swing.UIManager.get;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author alexandrelerario
@@ -14,8 +19,11 @@ public class CadCidade extends javax.swing.JInternalFrame {
     /**
      * Creates new form CadCidade
      */
+    private List<Cidade> cidades;    
+
     public CadCidade() {
         initComponents();
+        cidades = new br.data.crud.CrudCidade().getAll();
     }
 
     /**
@@ -33,8 +41,9 @@ public class CadCidade extends javax.swing.JInternalFrame {
         txtNome = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        btnDeletar = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tableCidade = new javax.swing.JTable();
 
         setClosable(true);
         setIconifiable(true);
@@ -60,9 +69,42 @@ public class CadCidade extends javax.swing.JInternalFrame {
             }
         });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        btnDeletar.setText("Deletar");
+        btnDeletar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeletarActionPerformed(evt);
+            }
+        });
+
+        tableCidade.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Código", "Nome"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Integer.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tableCidade.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableCidadeMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tableCidade);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -71,13 +113,13 @@ public class CadCidade extends javax.swing.JInternalFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(22, 22, 22)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2))
+                        .addComponent(jButton2)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnDeletar))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
@@ -86,11 +128,11 @@ public class CadCidade extends javax.swing.JInternalFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtNome, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(93, Short.MAX_VALUE))
+                .addContainerGap(123, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
@@ -102,10 +144,11 @@ public class CadCidade extends javax.swing.JInternalFrame {
                 .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(jButton2)
+                    .addComponent(btnDeletar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         pack();
@@ -113,31 +156,57 @@ public class CadCidade extends javax.swing.JInternalFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        br.data.entity.Cidade cid= new br.data.entity.Cidade();
+        br.data.entity.Cidade cid = new br.data.entity.Cidade();
         int cod = Integer.parseInt(txtCod.getText());
         String nome = txtNome.getText();
         cid.setCodigo(cod);
         cid.setNome(nome);
         new br.data.crud.CrudCidade().persist(cid);
+        construirTabela();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
-        String lista="";
-        for (br.data.entity.Cidade cid : new br.data.crud.CrudCidade().getAll()) {
-            lista = lista +cid.getCodigo() + " | " + cid.getNome()+ "\n";
-        }
-        jTextArea1.setText(lista);
+        construirTabela();
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void btnDeletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeletarActionPerformed
+        // TODO add your handling code here:
+        if (tableCidade.getSelectedRow() != -1) {
+             Cidade cidade = cidades.get(tableCidade.getSelectedRow());
+             new br.data.crud.CrudCidade().remove(cidade);
+             construirTabela();
+        }
+        
+    }//GEN-LAST:event_btnDeletarActionPerformed
 
+    private void tableCidadeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableCidadeMouseClicked
+        // TODO add your handling code here:
+        Cidade cidade = cidades.get(tableCidade.getSelectedRow());
+        txtCod.setText(cidade.getCodigo().toString());
+        txtNome.setText(cidade.getNome());
+    }//GEN-LAST:event_tableCidadeMouseClicked
+    
+    private void construirTabela() {
+        DefaultTableModel model = (DefaultTableModel) tableCidade.getModel();
+        model.setRowCount(0);
+        Object rowData[] = new Object[4];
+        cidades = new br.data.crud.CrudCidade().getAll();
+        for (br.data.entity.Cidade cid : cidades) {
+            rowData[0] = cid.getCodigo();
+            rowData[1] = cid.getNome();
+            
+            model.addRow(rowData);
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnDeletar;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable tableCidade;
     private javax.swing.JTextField txtCod;
     private javax.swing.JTextField txtNome;
     // End of variables declaration//GEN-END:variables
