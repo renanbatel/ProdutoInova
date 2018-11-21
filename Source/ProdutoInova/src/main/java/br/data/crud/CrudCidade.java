@@ -30,5 +30,7 @@ public class CrudCidade extends AbstractCrud<Cidade> {
         }
         return em;
     }
+    
+    
 
 }

@@ -7,8 +7,13 @@ package br.gui;
 
 import br.data.entity.Cidade;
 import java.util.List;
-import static javax.swing.UIManager.get;
+import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 /**
  *
@@ -19,10 +24,13 @@ public class CadCidade extends javax.swing.JInternalFrame {
     /**
      * Creates new form CadCidade
      */
-    private List<Cidade> cidades;    
+    private List<Cidade> cidades;
 
     public CadCidade() {
         initComponents();
+        
+        ((AbstractDocument) txtCod.getDocument()).setDocumentFilter(new CustomDocumentFilter());
+
         cidades = new br.data.crud.CrudCidade().getAll();
     }
 
@@ -37,13 +45,13 @@ public class CadCidade extends javax.swing.JInternalFrame {
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        txtCod = new javax.swing.JTextField();
         txtNome = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         btnDeletar = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tableCidade = new javax.swing.JTable();
+        txtCod = new javax.swing.JFormattedTextField();
 
         setClosable(true);
         setIconifiable(true);
@@ -106,6 +114,19 @@ public class CadCidade extends javax.swing.JInternalFrame {
         });
         jScrollPane2.setViewportView(tableCidade);
 
+        txtCod.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+                txtCodCaretPositionChanged(evt);
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+            }
+        });
+        txtCod.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtCodActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -126,8 +147,8 @@ public class CadCidade extends javax.swing.JInternalFrame {
                             .addComponent(jLabel2))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtNome, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(txtNome, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(123, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -148,7 +169,7 @@ public class CadCidade extends javax.swing.JInternalFrame {
                     .addComponent(btnDeletar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
 
         pack();
@@ -161,7 +182,13 @@ public class CadCidade extends javax.swing.JInternalFrame {
         String nome = txtNome.getText();
         cid.setCodigo(cod);
         cid.setNome(nome);
-        new br.data.crud.CrudCidade().persist(cid);
+
+        if (new br.data.crud.CrudCidade().findById(cid.getCodigo()) == null) {
+            new br.data.crud.CrudCidade().persist(cid);
+        } else {
+            JOptionPane.showMessageDialog(this, "Já existe uma cidade com esses código!", "Erro", 2);
+        }
+
         construirTabela();
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -173,11 +200,11 @@ public class CadCidade extends javax.swing.JInternalFrame {
     private void btnDeletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeletarActionPerformed
         // TODO add your handling code here:
         if (tableCidade.getSelectedRow() != -1) {
-             Cidade cidade = cidades.get(tableCidade.getSelectedRow());
-             new br.data.crud.CrudCidade().remove(cidade);
-             construirTabela();
+            Cidade cidade = cidades.get(tableCidade.getSelectedRow());
+            new br.data.crud.CrudCidade().remove(cidade);
+            construirTabela();
         }
-        
+
     }//GEN-LAST:event_btnDeletarActionPerformed
 
     private void tableCidadeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableCidadeMouseClicked
@@ -186,7 +213,17 @@ public class CadCidade extends javax.swing.JInternalFrame {
         txtCod.setText(cidade.getCodigo().toString());
         txtNome.setText(cidade.getNome());
     }//GEN-LAST:event_tableCidadeMouseClicked
+
+    private void txtCodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCodActionPerformed
+        // TODO add your handling code here:
+
+    }//GEN-LAST:event_txtCodActionPerformed
+
+    private void txtCodCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_txtCodCaretPositionChanged
+        // TODO add your handling code here:
     
+    }//GEN-LAST:event_txtCodCaretPositionChanged
+
     private void construirTabela() {
         DefaultTableModel model = (DefaultTableModel) tableCidade.getModel();
         model.setRowCount(0);
@@ -195,8 +232,36 @@ public class CadCidade extends javax.swing.JInternalFrame {
         for (br.data.entity.Cidade cid : cidades) {
             rowData[0] = cid.getCodigo();
             rowData[1] = cid.getNome();
-            
+
             model.addRow(rowData);
+        }
+    }
+    
+    private class CustomDocumentFilter extends DocumentFilter {
+
+        private Pattern regexCheck = Pattern.compile("[0-9]+");
+
+        @Override
+        public void insertString(FilterBypass fb, int offs, String str, AttributeSet a) throws BadLocationException {
+            if (str == null) {
+                return;
+            }
+
+            if (regexCheck.matcher(str).matches()) {
+                super.insertString(fb, offs, str, a);
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String str, AttributeSet attrs)
+                throws BadLocationException {
+            if (str == null) {
+                return;
+            }
+
+            if (regexCheck.matcher(str).matches()) {
+                fb.replace(offset, length, str, attrs);
+            }
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -207,7 +272,7 @@ public class CadCidade extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable tableCidade;
-    private javax.swing.JTextField txtCod;
+    private javax.swing.JFormattedTextField txtCod;
     private javax.swing.JTextField txtNome;
     // End of variables declaration//GEN-END:variables
 }

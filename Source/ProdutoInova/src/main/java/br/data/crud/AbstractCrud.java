@@ -8,9 +8,6 @@ package br.data.crud;
 import java.util.List;
 import javax.persistence.EntityManager;
 
-
-
-
 public abstract class AbstractCrud<T> {
 
     private Class<T> entityClass;
@@ -43,13 +40,18 @@ public abstract class AbstractCrud<T> {
         return getEntityManager().find(entityClass, id);
     }
 
+    public T findById(Integer id) {
+        return getEntityManager().find(entityClass, id);
+
+    }
+
     public List<T> getAll() {
-        try{
-        javax.persistence.criteria.CriteriaQuery cq;
-        cq = getEntityManager().getCriteriaBuilder().createQuery();
-        cq.select(cq.from(entityClass));
-        return getEntityManager().createQuery(cq).getResultList();
-        }catch(Exception e){
+        try {
+            javax.persistence.criteria.CriteriaQuery cq;
+            cq = getEntityManager().getCriteriaBuilder().createQuery();
+            cq.select(cq.from(entityClass));
+            return getEntityManager().createQuery(cq).getResultList();
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         return null;
@@ -71,6 +73,5 @@ public abstract class AbstractCrud<T> {
         javax.persistence.Query q = getEntityManager().createQuery(cq);
         return ((Long) q.getSingleResult()).intValue();
     }
-    
+
 }
-   
