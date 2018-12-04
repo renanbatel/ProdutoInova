@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -35,14 +36,17 @@ public class Cidade implements Serializable {
     private Integer codigo;
     @Column(name = "nome")
     private String nome;
-
+    
+    @OneToOne
+    private Estado estado;
+    
     public Cidade() {
     }
 
     public Cidade(Integer codigo) {
         this.codigo = codigo;
     }
-
+    
     public Integer getCodigo() {
         return codigo;
     }
@@ -58,6 +62,15 @@ public class Cidade implements Serializable {
     public void setNome(String nome) {
         this.nome = nome;
     }
+
+    public Estado getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Estado estado) {
+        this.estado = estado;
+    }
+    
 
     @Override
     public int hashCode() {

@@ -15,31 +15,24 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
-import br.data.entity.ComboItem;
+
 /**
  *
  * @author alexandrelerario
  */
-public class CadCidade extends javax.swing.JInternalFrame {
+public class CadEstado extends javax.swing.JInternalFrame {
 
     /**
      * Creates new form CadCidade
      */
-    private List<Cidade> cidades;
     private List<Estado> estados;
 
-    public CadCidade() {
+    public CadEstado() {
         initComponents();
-
+        
         ((AbstractDocument) txtCod.getDocument()).setDocumentFilter(new CustomDocumentFilter());
 
-        cidades = new br.data.crud.CrudCidade().getAll();
         estados = new br.data.crud.CrudEstado().getAll();
-        
-        for(Estado estado : estados) {
-            comboEstado.addItem(estado.getUf());
-        }
-
     }
 
     /**
@@ -60,8 +53,8 @@ public class CadCidade extends javax.swing.JInternalFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         tableCidade = new javax.swing.JTable();
         txtCod = new javax.swing.JFormattedTextField();
-        comboEstado = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
+        txtUf = new javax.swing.JTextField();
 
         setClosable(true);
         setIconifiable(true);
@@ -137,7 +130,7 @@ public class CadCidade extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel3.setText("Estado");
+        jLabel3.setText("UF");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -162,8 +155,8 @@ public class CadCidade extends javax.swing.JInternalFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtNome, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtCod, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(comboEstado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(123, Short.MAX_VALUE))
+                            .addComponent(txtUf, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -176,18 +169,18 @@ public class CadCidade extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(txtNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(9, 9, 9)
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(comboEstado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
+                    .addComponent(txtUf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2)
                     .addComponent(btnDeletar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -195,17 +188,17 @@ public class CadCidade extends javax.swing.JInternalFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        br.data.entity.Cidade cid = new br.data.entity.Cidade();
+        br.data.entity.Estado cid = new br.data.entity.Estado();
         int cod = Integer.parseInt(txtCod.getText());
         String nome = txtNome.getText();
         cid.setCodigo(cod);
         cid.setNome(nome);
-        Estado e = new br.data.crud.CrudEstado().findByUf(comboEstado.getSelectedItem().toString());
-        cid.setEstado(e);
-       if (new br.data.crud.CrudCidade().findById(cid.getCodigo()) == null) {
-            new br.data.crud.CrudCidade().persist(cid);
+        cid.setUf(txtUf.getText());
+
+        if (new br.data.crud.CrudEstado().findById(cid.getCodigo()) == null) {
+            new br.data.crud.CrudEstado().persist(cid);
         } else {
-            JOptionPane.showMessageDialog(this, "Já existe uma cidade com esses código!", "Erro", 2);
+            JOptionPane.showMessageDialog(this, "Já existe um estado com esses código!", "Erro", 2);
         }
 
         construirTabela();
@@ -219,8 +212,8 @@ public class CadCidade extends javax.swing.JInternalFrame {
     private void btnDeletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeletarActionPerformed
         // TODO add your handling code here:
         if (tableCidade.getSelectedRow() != -1) {
-            Cidade cidade = cidades.get(tableCidade.getSelectedRow());
-            new br.data.crud.CrudCidade().remove(cidade);
+            Estado estado = estados.get(tableCidade.getSelectedRow());
+            new br.data.crud.CrudEstado().remove(estado);
             construirTabela();
         }
 
@@ -228,9 +221,10 @@ public class CadCidade extends javax.swing.JInternalFrame {
 
     private void tableCidadeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableCidadeMouseClicked
         // TODO add your handling code here:
-        Cidade cidade = cidades.get(tableCidade.getSelectedRow());
-        txtCod.setText(cidade.getCodigo().toString());
-        txtNome.setText(cidade.getNome());
+        Estado estado = estados.get(tableCidade.getSelectedRow());
+        txtCod.setText(estado.getCodigo().toString());
+        txtNome.setText(estado.getNome());
+        txtUf.setText(estado.getUf());
     }//GEN-LAST:event_tableCidadeMouseClicked
 
     private void txtCodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCodActionPerformed
@@ -240,22 +234,22 @@ public class CadCidade extends javax.swing.JInternalFrame {
 
     private void txtCodCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_txtCodCaretPositionChanged
         // TODO add your handling code here:
-
+    
     }//GEN-LAST:event_txtCodCaretPositionChanged
 
     private void construirTabela() {
         DefaultTableModel model = (DefaultTableModel) tableCidade.getModel();
         model.setRowCount(0);
         Object rowData[] = new Object[4];
-        cidades = new br.data.crud.CrudCidade().getAll();
-        for (br.data.entity.Cidade cid : cidades) {
+        estados = new br.data.crud.CrudEstado().getAll();
+        for (br.data.entity.Estado cid : estados) {
             rowData[0] = cid.getCodigo();
             rowData[1] = cid.getNome();
-            rowData[2] = cid.getEstado().getUf();
-            model.addRow(rowData);
+            rowData[2] = cid.getUf();
+            model.addRow(rowData);  
         }
     }
-
+    
     private class CustomDocumentFilter extends DocumentFilter {
 
         private Pattern regexCheck = Pattern.compile("[0-9]+");
@@ -285,7 +279,6 @@ public class CadCidade extends javax.swing.JInternalFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDeletar;
-    private javax.swing.JComboBox<String> comboEstado;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
@@ -295,5 +288,6 @@ public class CadCidade extends javax.swing.JInternalFrame {
     private javax.swing.JTable tableCidade;
     private javax.swing.JFormattedTextField txtCod;
     private javax.swing.JTextField txtNome;
+    private javax.swing.JTextField txtUf;
     // End of variables declaration//GEN-END:variables
 }
